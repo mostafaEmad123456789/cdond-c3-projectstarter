@@ -150,6 +150,7 @@ jobs:
           command: |
             yum install -y gzip
             yum install -y tar
+            yum install -y ansible 
       - add_ssh_keys:
           fingerprints:
             - "9b:18:fd:dd:b1:d8:14:e1:6c:22:a1:8a:f1:39:58:b4"
@@ -158,7 +159,6 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum install -y ansible 
             yum install -y openssh
             
       - run:
@@ -171,20 +171,20 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
+      #- build-frontend
+      #- build-backend
+      #- test-frontend:
+      #    requires: [build-frontend]
+      #- test-backend:
+      #    requires: [build-backend]
+      #- scan-backend:
+      #    requires: [build-backend]
+      #- scan-frontend:
+      #    requires: [build-frontend]
+      #- deploy-infrastructure:
+      #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - configure-infrastructure 
+      #    requires: [deploy-infrastructure]
           
 
 
