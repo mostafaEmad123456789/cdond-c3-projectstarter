@@ -148,8 +148,8 @@ jobs:
       - run:
           name: Install Tar And gzip
           command: |
-            yum install -y gzip
-            yum install -y tar
+            apt-get install -y gzip
+            apt-get install -y tar
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install 
