@@ -146,10 +146,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Tar And gzip
+          name: Install Dependencies
           command: |
+            apk add --update ansible
             apk add --update gzip
             apk add --update tar
+            apk add --update curl
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install 
@@ -158,11 +160,6 @@ jobs:
             - "9b:18:fd:dd:b1:d8:14:e1:6c:22:a1:8a:f1:39:58:b4"
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update ansible
-            
       - run:
           name: Configure server
           command: |
