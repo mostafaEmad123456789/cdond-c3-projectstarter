@@ -60,7 +60,7 @@ jobs:
             npm run test
  
 workflows:
-  project-workflow:
+  default:
     jobs:
       - build-frontend
       - build-backend
