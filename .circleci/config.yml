@@ -132,7 +132,8 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instances --query "IPV4PublicAddress" --filter "Name=tag:project,Values=udapeople" > inventory.txt
+            echo "[web]" > inventory.txt
+            aws ec2 describe-instances --query "Reservations[*].Instances[*].IPV4PublicAddress" --filter "Name=tag:project,Values=udapeople" --output text >> inventory.txt
             cat inventory.txt
       - persist_to_workspace:
           root: ~/
@@ -140,7 +141,27 @@ jobs:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment
     
-        
+  configure-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "9b:18:fd:dd:b1:d8:14:e1:6c:22:a1:8a:f1:39:58:b4"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            yum install -y openssh tar gzip ansible
+            
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment     
 
 workflows:
   default:

@@ -1,0 +1,15 @@
+- name: "Install Python"
+  apt:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - update
+    - upgrade
+    - python3
+    - pip
+    - Nodejs
+    - npm
+  
+- name: "Install PM2"
+  shell: "npm install pm2"
+
