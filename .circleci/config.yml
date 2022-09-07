@@ -147,7 +147,9 @@ jobs:
       - checkout
       - run:
           name: Install Tar And gzip
-          command: yum install -y gzip tar
+          command: |
+            yum install -y gzip
+            yum install -y tar
       - add_ssh_keys:
           fingerprints:
             - "9b:18:fd:dd:b1:d8:14:e1:6c:22:a1:8a:f1:39:58:b4"
@@ -156,7 +158,10 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum install -y openssh tar gzip ansible
+            yum install -y openssh
+            yum install -y tar 
+            yum install -y gzip 
+            yum install -y ansible
             
       - run:
           name: Configure server
