@@ -250,16 +250,17 @@ jobs:
       - checkout
       - restore_cache:
             keys: [backend-build]
-      - attach_workspace:
-          at: ~/
       - install-depends
       - add_ssh_keys:
           fingerprints:
             - "9b:18:fd:dd:b1:d8:14:e1:6c:22:a1:8a:f1:39:58:b4"
+      - attach_workspace:
+          at: ~/
       - run:
           name: Produce Artifact
           command: |
             cd backend
+            npm install
             npm run build
             tar -czf artifact.tar.gz dist/* package*
 
