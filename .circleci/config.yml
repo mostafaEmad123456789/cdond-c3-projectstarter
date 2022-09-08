@@ -9,9 +9,40 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
+            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-            
+  install-depends:
+    description: Install Dependencies
+    steps:
+      - run:
+          name: Install Dependencies
+          command: |
+            python3 -m pip install --user ansible
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install 
+            sudo apt install -y gzip
+            sudo apt install -y tar
+            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt install -y nodejs  
+            sudo npm install --global n
+            sudo n 13.8.0
+  revert-migrations:
+    description: Revert the last migration, if any were executed during the current workflow
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            SUCCESS=$(curl --insecure  https://kvdb.io/MwS3AsDNPK5z2HertHCh1J/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            # Logic for reverting the database state
+            if (( $SUCCESS == 1 ));
+            then
+              cd ~/project/backend
+              npm install
+              npm run migration:revert
+            fi   
 
 jobs:
   build-frontend:
@@ -89,6 +120,7 @@ jobs:
             cd backend
             npm install
             npm audit fix --audit-level=critical --force
+            npm audit --audit-level=critical
 
   scan-backend:
     docker:
@@ -103,6 +135,7 @@ jobs:
             cd backend
             npm install
             npm audit fix --audit-level=critical --force
+            npm audit --audit-level=critical
 
   deploy-infrastructure:
     docker:
@@ -192,27 +225,16 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: cimg/python:3.10
     steps:
       - checkout
       - restore_cache:
             keys: [frontend-build]
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update ansible
-            apk add --update nodejs
-            apk add --update npm
-            apk add --update gzip
-            apk add --update tar
-            apk add --update curl
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            ./aws/install 
+      - install-depends
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(/usr/local/bin/aws ec2 describe-instances --query "Reservations[*].Instances[*].[PublicIpAddress]" --filter "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].[PublicIpAddress]" --filter "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -224,27 +246,20 @@ jobs:
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            /usr/local/bin/aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-environment
+      - revert-migrations
 
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: cimg/python:3.10
     steps:
       - checkout
       - restore_cache:
             keys: [backend-build]
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update ansible
-            apk add --update nodejs
-            apk add --update npm
-            apk add --update gzip
-            apk add --update tar
-            apk add --update curl
+      - install-depends
       - add_ssh_keys:
           fingerprints:
             - "9b:18:fd:dd:b1:d8:14:e1:6c:22:a1:8a:f1:39:58:b4"
@@ -254,13 +269,15 @@ jobs:
             cd backend
             npm i
             npm run build
-            cd ..
             tar -C backend -czvf artifact.tar.gz .
-            cd .circleci/ansible
+            cd ..
+            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+            cd .circleci/ansible 
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
+      - revert-migrations
 
 workflows:
   default:

@@ -1,11 +1,27 @@
-- name: "Copy Files" 
+- name: "Creates backend folder"
+  file:
+    path: ~/backend
+    state: directory
+
+- name: "Copy Artifact" 
   copy:
-    src: ~/artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz
-    dest: ~/
+    src: artifact.tar.gz
+    dest: ~/backend
+
+- name: "Unarchive files"
+  unarchive:
+    src: artifact.tar.gz
+    dest: ~/backend
+
+- name: "Install NodeJS Depends"
+  shell: |
+    cd ~/backend
+    npm i
+
 - name: "Backend Deploy"
   shell: |
-    tar -xzvf ~/artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz
-    npm install
+    cd ~/backend/dist
     pm2 stop default
-    pm2 start npm -- start
+    pm2 start main.js
+    
 
