@@ -3,8 +3,6 @@
     name: "{{ item }}"
     state: latest
   loop:
-    - update
-    - upgrade
     - python3
     - pip
     - Nodejs
