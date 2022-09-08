@@ -224,7 +224,7 @@ jobs:
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            /usr/local/bin/aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-environment
 
   deploy-backend:
@@ -234,6 +234,8 @@ jobs:
       - checkout
       - restore_cache:
             keys: [backend-build]
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -243,9 +245,6 @@ jobs:
             apk add --update gzip
             apk add --update tar
             apk add --update curl
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            ./aws/install 
       - add_ssh_keys:
           fingerprints:
             - "9b:18:fd:dd:b1:d8:14:e1:6c:22:a1:8a:f1:39:58:b4"
