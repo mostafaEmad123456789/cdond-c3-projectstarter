@@ -11,6 +11,7 @@
 - name: "Install NodeJS Depends"
   shell: |
     cd ~/backend
+    npm install typescript -g
     npm i
   
 
