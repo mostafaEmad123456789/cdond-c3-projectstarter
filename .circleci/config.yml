@@ -192,7 +192,7 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: circleci/node
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - restore_cache:
@@ -201,6 +201,8 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
+            apk add --update nodejs
+            apk add --update npm
             apk add --update gzip
             apk add --update tar
             apk add --update curl
@@ -227,7 +229,7 @@ jobs:
 
   deploy-backend:
     docker:
-      - image: circleci/node
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - restore_cache:
@@ -236,6 +238,8 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
+            apk add --update nodejs
+            apk add --update npm
             apk add --update gzip
             apk add --update tar
             apk add --update curl
