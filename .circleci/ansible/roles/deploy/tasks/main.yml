@@ -3,11 +3,6 @@
     path: ~/backend
     state: directory
 
-- name: "Copy Artifact" 
-  copy:
-    src: artifact.tar.gz
-    dest: ~/backend
-
 - name: "Unarchive files"
   unarchive:
     src: artifact.tar.gz
@@ -17,11 +12,12 @@
   shell: |
     cd ~/backend
     npm i
+  
 
 - name: "Backend Deploy"
   shell: |
     cd ~/backend/dist
     pm2 stop default
     pm2 start main.js
-    
+  register: execute_node 
 
