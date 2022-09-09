@@ -269,6 +269,7 @@ jobs:
             tar -cvzf artifact.tar.gz dist/* package*
             
             cd ..
+            mkdir .circleci/ansible/roles/deploy/files
             cp artifact.tar.gz .circleci/ansible/roles/deploy/files
             echo "List: $(ls .circleci/ansible/roles/deploy/files)"
             cd .circleci/ansible/roles/deploy/files
@@ -387,30 +388,29 @@ jobs:
 workflows:
   default:
     jobs:
-      - try-tar
-      #- build-frontend
-      #- build-backend
-      #- test-frontend:
-      #    requires: [build-frontend]
-      #- test-backend:
-      #    requires: [build-backend]
-      #- scan-backend:
-      #    requires: [build-backend]
-      #- scan-frontend:
-      #    requires: [build-frontend]
-      #- deploy-infrastructure:
-      #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      #- configure-infrastructure:
-      #    requires: [deploy-infrastructure]
-      #- run-migrations:
-      #    requires: [configure-infrastructure]
-      #- deploy-frontend:
-      #    requires: [run-migrations]
-      #- deploy-backend:
-      #    requires: [run-migrations]    
-      #- smoke-test:
-      #    requires: [deploy-backend, deploy-frontend]
-      #- cloudfront-update:
-      #    requires: [smoke-test]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]    
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
 
  
