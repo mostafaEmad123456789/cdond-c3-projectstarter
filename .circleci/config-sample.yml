@@ -230,13 +230,19 @@ jobs:
 
   cloudfront-update:
     docker:
-      # Docker image here that supports AWS CLI
+      - image: cimg/python:3.10 
     steps:
-      # Checkout code from git
+      - checkout
       - run:
-          name: Install dependencies
+          name: Install dependencies Frontend
           command: |
-            # your code here
+            cd frontend
+            npm install
+      - run:
+          name: Install dependencies Backend
+          command: |
+            cd backend
+            npm install
       - run:
           name: Update cloudfront distribution
           command: |

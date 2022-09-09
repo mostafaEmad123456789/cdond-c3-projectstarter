@@ -267,9 +267,8 @@ jobs:
             cd backend
             npm run build
             tar -cvzf artifact.tar.gz dist/* package*
-            cp artifact.tar.gz ../.circleci/ansible/roles/deploy/files
-            cd .. 
-            tar -C backend -czvf artifact.tar.gz .circleci/ansible/roles/deploy/files
+            
+            cd ..
             cp artifact.tar.gz .circleci/ansible/roles/deploy/files
             echo "List: $(ls .circleci/ansible/roles/deploy/files)"
             cd .circleci/ansible/roles/deploy/files
@@ -295,13 +294,23 @@ jobs:
       - checkout
       - install-depends
       - run:
-          name: Get backend url
+          name: Install dependencies Frontend
           command: |
-            # your code here
+            cd frontend
+            npm install
+      - run:
+          name: Install dependencies Backend
+          command: |
+            cd backend
+            npm install
       - run:
           name: Backend smoke test.
           command: |
-            export API_URL="http://${BACKEND_IP}:3030"
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+            export API_URL="http://${BACKEND_PUBLIC_IP}:3030"
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
@@ -324,30 +333,69 @@ jobs:
       - destroy-environment
       - revert-migrations 
 
+  cloudfront-update:
+    docker:
+      - image: cimg/python:3.10 
+    steps:
+      - checkout  
+      - install-depends
+      - run:
+          name: Getting Workflow IDs & Update cloudfront distribution & CleanUp
+          command: |
+            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name udapeople-cloudfront --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+            echo NewWorkflowID: "${CIRCLE_WORKFLOW_ID:0:7}"
+            if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
+            then
+              echo "-----------------Delete Confirmed-----------------"
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+            else
+              echo "-----------------Cannot Cleanup-----------------"
+            fi
+      - destroy-environment
+      - revert-migrations  
+
+
+  try-tar:
+    name: try
+    command: |
+      mkdir x
+      cd x
+      touch test
+      cd ..
+      tar -cvzf artifact.tar.gz x/*
+      cp artifact.tar.gz .circleci/ansible/roles/deploy/files
 
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]    
-
+      - try-tar
+      #- build-frontend
+      #- build-backend
+      #- test-frontend:
+      #    requires: [build-frontend]
+      #- test-backend:
+      #    requires: [build-backend]
+      #- scan-backend:
+      #    requires: [build-backend]
+      #- scan-frontend:
+      #    requires: [build-frontend]
+      #- deploy-infrastructure:
+      #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #- configure-infrastructure:
+      #    requires: [deploy-infrastructure]
+      #- run-migrations:
+      #    requires: [configure-infrastructure]
+      #- deploy-frontend:
+      #    requires: [run-migrations]
+      #- deploy-backend:
+      #    requires: [run-migrations]    
+      #- smoke-test:
+      #    requires: [deploy-backend, deploy-frontend]
+      #- cloudfront-update:
+      #    requires: [smoke-test]
 
  
