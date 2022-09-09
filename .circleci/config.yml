@@ -269,7 +269,7 @@ jobs:
             tar -cvzf artifact.tar.gz dist/* package*
             
             cd ..
-            mkdir .circleci/ansible/roles/deploy/files
+            
             cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
             echo "List: $(ls .circleci/ansible/roles/deploy/files)"
             
