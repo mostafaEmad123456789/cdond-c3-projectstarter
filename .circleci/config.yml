@@ -358,16 +358,20 @@ jobs:
       - destroy-environment
       - revert-migrations  
 
-
   try-tar:
-    name: try
-    command: |
-      mkdir x
-      cd x
-      touch test
-      cd ..
-      tar -cvzf artifact.tar.gz x/*
-      cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+    docker:
+        - image: cimg/python:3.10 
+    steps:
+      - checkout 
+      - run:
+        name: try
+        command: |
+          mkdir x
+          cd x
+          touch test
+          cd ..
+          tar -cvzf artifact.tar.gz x/*
+          cp artifact.tar.gz .circleci/ansible/roles/deploy/files
 
 workflows:
   default:
