@@ -364,14 +364,15 @@ jobs:
     steps:
       - checkout 
       - run:
-        name: try
-        command: |
-          mkdir x
-          cd x
-          touch test
-          cd ..
-          tar -cvzf artifact.tar.gz x/*
-          cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+          name: Install NPM
+          command: |
+            mkdir x
+            cd x
+            touch test
+            cd ..
+            tar -cvzf artifact.tar.gz x/*
+            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+          
 
 workflows:
   default:
