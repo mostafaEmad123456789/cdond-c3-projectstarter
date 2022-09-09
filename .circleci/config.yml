@@ -358,31 +358,6 @@ jobs:
       - destroy-environment
       - revert-migrations  
 
-  try-tar:
-    docker:
-      - image: cimg/python:3.10 
-    steps:
-      - checkout 
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Install NPM
-          command: |
-            mkdir x
-            cd x
-            touch test
-            cd ..
-            tar -cvzf artifact.tar.gz x/*
-            mkdir .circleci/ansible/roles/deploy/files
-            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
-      - run:
-          name: display
-          command: |  
-            cd .circleci/ansible/roles/deploy/files
-            tar -xvzf artifact.tar.gz
-            cd x
-            pwd
-            ls
 
 workflows:
   default:
@@ -407,9 +382,9 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]    
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      - cloudfront-update:
-          requires: [smoke-test]
+      #- smoke-test:
+      #    requires: [deploy-backend, deploy-frontend]
+      #- cloudfront-update:
+      #    requires: [smoke-test]
 
  
