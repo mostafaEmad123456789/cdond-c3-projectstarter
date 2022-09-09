@@ -373,6 +373,7 @@ jobs:
             touch test
             cd ..
             tar -cvzf artifact.tar.gz x/*
+            mkdir .circleci/ansible/roles/deploy/files
             cp artifact.tar.gz .circleci/ansible/roles/deploy/files
       - run:
           name: display
