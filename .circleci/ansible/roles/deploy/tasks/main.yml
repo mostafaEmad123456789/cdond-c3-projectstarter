@@ -10,6 +10,7 @@
 
 - name: "Install NodeJS Depends"
   shell: |
+    pwd
     cd ~/backend
     npm i
   
