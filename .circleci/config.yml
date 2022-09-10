@@ -12,6 +12,7 @@ commands:
             aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+  
   install-depends:
     description: Install Dependencies
     steps:
@@ -28,6 +29,7 @@ commands:
             sudo apt install -y nodejs  
             sudo npm install --global n
             sudo n 13.8.0
+  
   revert-migrations:
     description: Revert the last migration, if any were executed during the current workflow
     steps:
@@ -195,7 +197,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node
+      - image: cimg/python:3.10
     steps:
       - checkout
       - install-depends
