@@ -198,16 +198,17 @@ jobs:
       - image: circleci/node
     steps:
       - checkout
+      - install-depends
       - restore_cache:
           keys: [backend-build]
       - run:
           name: Run migrations
           command: |
-            export TYPEORM_HOST=$(aws ec2 describe-instances --region us-east-1 --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
             cd backend
             npm install
             npm run premigrations
             npm run migrations > ~/project/backend/migrations_dump.txt
+            echo "--------------Results--------------------------"
             cat ~/project/backend/migrations_dump.txt
       - run:
           name: Send migration results
