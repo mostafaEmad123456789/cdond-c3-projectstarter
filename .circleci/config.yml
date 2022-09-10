@@ -215,7 +215,7 @@ jobs:
       - run:
           name: Send migration results
           command: |
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            if grep -i "has been executed successfully" ~/project/backend/migrations_dump.txt
             then
                 curl https://kvdb.io/MwS3AsDNPK5z2HertHCh1J/migration -d '1'
             else
@@ -382,7 +382,7 @@ jobs:
               aws cloudformation delete-stack --stack-name "frontend-${OldWorkflowID}"
             fi
 
-workflows:
+workflows: 
   default:
     jobs:
       - build-frontend
