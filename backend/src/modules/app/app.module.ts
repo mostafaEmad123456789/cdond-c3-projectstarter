@@ -18,7 +18,7 @@ import { EmployeeModule } from '../domain/employees/employee.module';
   imports: [
     StatusModule,
     ConfigModule,
-    TypeOrmModule.forRootAsync({
+    TypeOrmModule.forRoot({
       imports: [ConfigModule],
       inject: [ConfigService],
       autoLoadEntities: true,
