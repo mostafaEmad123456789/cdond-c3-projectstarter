@@ -405,11 +405,3 @@ workflows:
       #- cleanup:
       #    requires: [cloudfront-update]
  
-
-
-if curl "https://www.google.com" | grep "ok"
-then
-  return 0
-else
-  return 1
-fi
